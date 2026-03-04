@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MishiPay mPOS ROI Calculator — Conversion Rate Uplift for Apparel Retail</title>
+  <meta name="description" content="Calculate how much incremental revenue MishiPay mPOS can unlock by improving your in-store conversion rate.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1E5FBB;
+      --blue-dark: #163F7A;
+      --blue-light: #EBF2FC;
+      --navy: #0F172A;
+      --dark-text: #111827;
+      --mid-text: #4B5563;
+      --light-text: #6B7280;
+      --muted: #9CA3AF;
+      --border: #E5E7EB;
+      --card-bg: #F9FAFB;
+      --white: #FFFFFF;
+      --green: #059669;
+      --green-light: #ECFDF5;
+      --green-border: #A7F3D0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--white);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 48px 16px 64px;
+      color: var(--dark-text);
+    }
+
+    .header { text-align: center; margin-bottom: 8px; max-width: 620px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--navy); border-radius: 100px; padding: 8px 20px; margin-bottom: 24px;
+    }
+    .badge-brand { font-weight: 700; font-size: 15px; color: #fff; }
+    .badge-label { font-size: 13px; color: #93C5FD; font-weight: 500; }
+    .header h1 { font-size: 36px; font-weight: 800; color: var(--navy); line-height: 1.15; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .header h1 span { color: var(--blue); }
+    .header p { font-size: 16px; color: var(--light-text); max-width: 540px; margin: 0 auto 40px; line-height: 1.6; }
+
+    .card {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+      max-width: 920px; width: 100%;
+      background: var(--white); border-radius: 24px; padding: 44px 48px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 40px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--blue);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 28px; padding-bottom: 14px; border-bottom: 2px solid var(--blue-light);
+    }
+
+    .slider-group { margin-bottom: 24px; }
+    .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .slider-label { font-size: 12px; font-weight: 600; color: var(--mid-text); text-transform: uppercase; letter-spacing: 0.06em; }
+    .slider-value { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--navy); }
+    .slider-range { display: flex; justify-content: space-between; margin-top: 6px; }
+    .slider-range span { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+    .uplift-locked {
+      background: var(--green-light);
+      border: 1px solid var(--green-border); border-radius: 14px; padding: 18px 20px; margin-top: 4px;
+    }
+    .uplift-locked-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .uplift-locked-note { font-size: 12px; color: var(--green); font-style: italic; line-height: 1.4; }
+
+    input[type="range"] {
+      width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+      border-radius: 100px; outline: none; cursor: pointer; background: #E5E7EB;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+      background: var(--white); border: 3px solid var(--blue);
+      box-shadow: 0 1px 4px rgba(30,95,187,0.25); cursor: pointer; transition: box-shadow 0.2s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { box-shadow: 0 2px 12px rgba(30,95,187,0.4); }
+    input[type="range"]::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--white);
+      border: 3px solid var(--blue); box-shadow: 0 1px 4px rgba(30,95,187,0.25); cursor: pointer;
+    }
+
+    .result-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1E293B 100%);
+      border-radius: 16px; padding: 32px 28px; text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .result-hero.pop { transform: scale(1.02); }
+    .result-hero .r-label { font-size: 11px; font-weight: 700; color: #93C5FD; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+    .result-hero .r-value { font-family: 'Space Mono', monospace; font-size: 38px; font-weight: 700; color: #60A5FA; line-height: 1.1; }
+    .result-hero .r-sub { font-size: 13px; color: #94A3B8; margin-top: 6px; }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .result-card {
+      background: var(--card-bg); border-radius: 14px; padding: 18px 16px; text-align: center;
+      border: 1px solid var(--border); transition: transform 0.3s ease;
+    }
+    .result-card.pop { transform: scale(1.02); }
+    .result-card .r-label { font-size: 10px; font-weight: 700; color: var(--mid-text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .result-card .r-value { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .result-card .r-sub { font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 500; }
+
+    .result-card.green-card { background: var(--green-light); border-color: var(--green-border); }
+    .result-card.green-card .r-value { color: var(--green); }
+    .result-card.green-card .r-label { color: var(--green); }
+
+    .rev-compare { margin-top: 16px; }
+    .rev-compare .rc-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .bar-wrap { background: #F3F4F6; border-radius: 8px; height: 32px; position: relative; overflow: hidden; }
+    .bar-current { background: #D1D5DB; height: 100%; border-radius: 8px; position: absolute; left: 0; top: 0; transition: width 0.4s ease; }
+    .bar-new { background: linear-gradient(90deg, var(--blue), var(--blue-dark)); height: 100%; border-radius: 8px; position: absolute; left: 0; top: 0; transition: width 0.4s ease; }
+    .bar-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--muted); font-weight: 500; }
+    .bar-labels .new-label { color: var(--blue); font-weight: 700; }
+
+    .methodology {
+      margin-top: 18px; padding: 16px 18px; background: var(--card-bg);
+      border-radius: 12px; border: 1px solid var(--border);
+    }
+    .methodology .m-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .methodology .m-body { font-size: 12px; color: var(--light-text); line-height: 1.7; }
+    .methodology strong { color: var(--mid-text); font-weight: 600; }
+
+    .cta-wrap { text-align: center; margin-top: 40px; }
+    .cta-wrap .cta-lead { font-size: 16px; color: var(--light-text); margin-bottom: 18px; font-weight: 500; }
+    .cta-btn {
+      display: inline-block; background: var(--blue);
+      border-radius: 12px; padding: 16px 40px; font-size: 15px; font-weight: 700; color: #fff;
+      cursor: pointer; box-shadow: 0 2px 12px rgba(30,95,187,0.3);
+      text-decoration: none; border: none; transition: transform 0.2s, box-shadow 0.2s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(30,95,187,0.4); background: var(--blue-dark); }
+    .cta-site { font-size: 13px; color: var(--muted); margin-top: 14px; font-weight: 500; }
+
+    @media (max-width: 780px) {
+      .card { grid-template-columns: 1fr; gap: 32px; padding: 28px 20px; }
+      .header h1 { font-size: 28px; }
+      .result-hero .r-value { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:center;gap:8px;padding:12px 16px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid #E5E7EB;">
+    <a href="index.html" style="padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;background:#F3F4F6;color:#4B5563;">RFID Kiosk ROI</a>
+    <a href="mpos.html" style="padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;background:#0F172A;color:#fff;">mPOS ROI</a>
+  </nav>
+  <div style="height:52px"></div>
+  <div class="header">
+    <div class="badge"><span class="badge-brand">MishiPay</span><span class="badge-label">mPOS ROI Calculator</span></div>
+    <h1>How much revenue is<br><span>walking out your door?</span></h1>
+    <p>Your staff are your best salespeople — but they can't close if they have to send shoppers to a till. See how much incremental revenue MishiPay mPOS unlocks by converting more browsers into buyers, right on the shop floor.</p>
+  </div>
+
+  <div class="card">
+    <!-- LEFT: Results -->
+    <div>
+      <div class="section-label">Your Projected ROI</div>
+      <div class="result-hero" id="hero-card">
+        <div class="r-label">Net Incremental Revenue</div>
+        <div class="r-value" id="r-net">$0</div>
+        <div class="r-sub">New revenue captured minus mPOS investment</div>
+      </div>
+      <div class="result-grid">
+        <div class="result-card green-card"><div class="r-label">Revenue Uplift</div><div class="r-value" id="r-increv">$0</div><div class="r-sub">additional annual revenue</div></div>
+        <div class="result-card"><div class="r-label">mPOS Investment</div><div class="r-value" id="r-mpos">$0</div><div class="r-sub" id="r-mpos-sub">0 devices × $2,000/yr</div></div>
+        <div class="result-card"><div class="r-label">ROI</div><div class="r-value" id="r-roi">0%</div><div class="r-sub">return on mPOS spend</div></div>
+        <div class="result-card green-card"><div class="r-label">New Conversion Rate</div><div class="r-value" id="r-conv">0%</div><div class="r-sub" id="r-conv-sub">up from 0%</div></div>
+      </div>
+      <div class="rev-compare">
+        <div class="rc-label">Annual Revenue Comparison</div>
+        <div class="bar-wrap"><div class="bar-new" id="bar-new"></div><div class="bar-current" id="bar-current"></div></div>
+        <div class="bar-labels"><span>Current: <span id="bar-curr-val">$0</span></span><span class="new-label">With mPOS: <span id="bar-new-val">$0</span></span></div>
+      </div>
+      <div class="methodology">
+        <div class="m-title">How we calculate</div>
+        <div class="m-body">
+          <strong>Conversion rate</strong> = daily transactions ÷ daily footfall<br>
+          <strong>Current revenue</strong> = daily transactions × ATV × stores × 360 days<br>
+          <strong>New revenue</strong> = footfall × (conversion rate + 5.36%) × ATV × stores × 360<br>
+          <strong>mPOS cost</strong> = sales staff per store × stores × $2,000/yr per device (hardware + software)<br>
+          <strong>Net gain</strong> = revenue uplift − mPOS investment
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Inputs -->
+    <div>
+      <div class="section-label">Your Current Setup</div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Daily Footfall per Store</span><span class="slider-value" id="val-traffic">200</span></div><input type="range" id="traffic" min="50" max="2000" step="10" value="200"><div class="slider-range"><span>50</span><span>2,000</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Daily Transactions per Store</span><span class="slider-value" id="val-transactions">40</span></div><input type="range" id="transactions" min="0" max="5000" step="10" value="40"><div class="slider-range"><span>0</span><span>5,000</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Average Transaction Value</span><span class="slider-value" id="val-atv">$45</span></div><input type="range" id="atv" min="10" max="200" step="5" value="45"><div class="slider-range"><span>$10</span><span>$200</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Sales Staff per Store</span><span class="slider-value" id="val-staff">6</span></div><input type="range" id="staff" min="1" max="30" step="1" value="6"><div class="slider-range"><span>1</span><span>30</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Number of Stores</span><span class="slider-value" id="val-stores">50</span></div><input type="range" id="stores" min="1" max="500" step="1" value="50"><div class="slider-range"><span>1</span><span>500</span></div></div>
+      <div class="uplift-locked">
+        <div class="uplift-locked-header">
+          <span class="slider-label" style="color:#059669;">Expected Conversion Uplift</span>
+          <span class="slider-value" style="color:#059669;">+5.36%</span>
+        </div>
+        <div class="uplift-locked-note">Based on MishiPay's observed performance across apparel deployments</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-wrap">
+    <div class="cta-lead">Ready to turn every staff interaction into a sale?</div>
+    <a href="https://mishipay.com/get-a-demo/" class="cta-btn" target="_blank" rel="noopener">Schedule a Demo →</a>
+    <div class="cta-site">mishipay.com</div>
+  </div>
+
+  <script>
+    const MPOS_ANNUAL_COST = 2000, WORKING_DAYS = 360;
+    const sliders = { traffic: document.getElementById('traffic'), transactions: document.getElementById('transactions'), atv: document.getElementById('atv'), staff: document.getElementById('staff'), stores: document.getElementById('stores') };
+    const vals = { traffic: document.getElementById('val-traffic'), transactions: document.getElementById('val-transactions'), atv: document.getElementById('val-atv'), staff: document.getElementById('val-staff'), stores: document.getElementById('val-stores') };
+
+    function fmt(n) { return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+    function updateSliderTrack(el) {
+      const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+      el.style.background = `linear-gradient(to right, #1E5FBB 0%, #1E5FBB ${pct}%, #E5E7EB ${pct}%, #E5E7EB 100%)`;
+    }
+    function animatePop() {
+      document.querySelectorAll('.result-hero, .result-card').forEach(c => c.classList.add('pop'));
+      setTimeout(() => document.querySelectorAll('.result-hero, .result-card').forEach(c => c.classList.remove('pop')), 350);
+    }
+    function calculate() {
+      const traffic = +sliders.traffic.value, transactions = +sliders.transactions.value;
+      const atv = +sliders.atv.value, staffCount = +sliders.staff.value, storeCount = +sliders.stores.value;
+      const uplift = 5.36;
+      const convrate = traffic > 0 ? (transactions / traffic) * 100 : 0;
+
+      vals.traffic.textContent = traffic.toLocaleString();
+      vals.transactions.textContent = transactions.toLocaleString();
+      vals.atv.textContent = '$' + atv;
+      vals.staff.textContent = staffCount;
+      vals.stores.textContent = storeCount.toLocaleString();
+      Object.values(sliders).forEach(updateSliderTrack);
+
+      const currentRevenue = traffic * (convrate / 100) * atv * storeCount * WORKING_DAYS;
+      const newConvRate = convrate + uplift;
+      const newRevenue = traffic * (newConvRate / 100) * atv * storeCount * WORKING_DAYS;
+      const revenueUplift = newRevenue - currentRevenue;
+      const totalDevices = staffCount * storeCount;
+      const mposCost = totalDevices * MPOS_ANNUAL_COST;
+      const netGain = revenueUplift - mposCost;
+      const roi = mposCost > 0 ? Math.round((netGain / mposCost) * 100) : 0;
+
+      document.getElementById('r-net').textContent = (netGain >= 0 ? '' : '-') + fmt(netGain);
+      document.getElementById('r-increv').textContent = fmt(revenueUplift);
+      document.getElementById('r-mpos').textContent = fmt(mposCost);
+      document.getElementById('r-mpos-sub').textContent = totalDevices.toLocaleString() + ' devices × $' + MPOS_ANNUAL_COST.toLocaleString() + '/yr';
+      document.getElementById('r-roi').textContent = roi + '%';
+      document.getElementById('r-conv').textContent = newConvRate.toFixed(1) + '%';
+      document.getElementById('r-conv-sub').textContent = 'up from ' + convrate.toFixed(1) + '%';
+
+      const maxRev = newRevenue;
+      document.getElementById('bar-new').style.width = '100%';
+      document.getElementById('bar-current').style.width = (maxRev > 0 ? (currentRevenue / maxRev) * 100 : 0) + '%';
+      document.getElementById('bar-curr-val').textContent = fmt(currentRevenue);
+      document.getElementById('bar-new-val').textContent = fmt(newRevenue);
+      animatePop();
+    }
+    Object.values(sliders).forEach(el => el.addEventListener('input', calculate));
+    calculate();
+  </script>
+</body>
+</html>

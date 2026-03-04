@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MishiPay ROI Calculator — RFID Kiosk Savings for Apparel Retail</title>
+  <meta name="description" content="Calculate how much your apparel stores can save by replacing traditional checkout with MishiPay RFID Kiosks.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1E5FBB;
+      --blue-dark: #163F7A;
+      --blue-light: #EBF2FC;
+      --navy: #0F172A;
+      --dark-text: #111827;
+      --mid-text: #4B5563;
+      --light-text: #6B7280;
+      --muted: #9CA3AF;
+      --border: #E5E7EB;
+      --card-bg: #F9FAFB;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--white);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 48px 16px 64px;
+      color: var(--dark-text);
+    }
+
+    .header { text-align: center; margin-bottom: 8px; max-width: 600px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--navy); border-radius: 100px; padding: 8px 20px; margin-bottom: 24px;
+    }
+    .badge-brand { font-weight: 700; font-size: 15px; color: #fff; }
+    .badge-label { font-size: 13px; color: #93C5FD; font-weight: 500; }
+    .header h1 { font-size: 36px; font-weight: 800; color: var(--navy); line-height: 1.15; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .header h1 span { color: var(--blue); }
+    .header p { font-size: 16px; color: var(--light-text); max-width: 500px; margin: 0 auto 40px; line-height: 1.6; }
+
+    .card {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+      max-width: 900px; width: 100%;
+      background: var(--white); border-radius: 24px; padding: 44px 48px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 40px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--blue);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 28px; padding-bottom: 14px; border-bottom: 2px solid var(--blue-light);
+    }
+
+    .slider-group { margin-bottom: 28px; }
+    .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .slider-label { font-size: 12px; font-weight: 600; color: var(--mid-text); text-transform: uppercase; letter-spacing: 0.06em; }
+    .slider-value { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--navy); }
+    .slider-range { display: flex; justify-content: space-between; margin-top: 6px; }
+    .slider-range span { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+    input[type="range"] {
+      width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+      border-radius: 100px; outline: none; cursor: pointer; background: #E5E7EB;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+      background: var(--white); border: 3px solid var(--blue);
+      box-shadow: 0 1px 4px rgba(30,95,187,0.25); cursor: pointer; transition: box-shadow 0.2s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { box-shadow: 0 2px 12px rgba(30,95,187,0.4); }
+    input[type="range"]::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--white);
+      border: 3px solid var(--blue); box-shadow: 0 1px 4px rgba(30,95,187,0.25); cursor: pointer;
+    }
+
+    .result-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1E293B 100%);
+      border-radius: 16px; padding: 32px 28px; text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .result-hero.pop { transform: scale(1.02); }
+    .result-hero .r-label { font-size: 11px; font-weight: 700; color: #93C5FD; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+    .result-hero .r-value { font-family: 'Space Mono', monospace; font-size: 38px; font-weight: 700; color: #60A5FA; line-height: 1.1; }
+    .result-hero .r-sub { font-size: 13px; color: #94A3B8; margin-top: 6px; }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .result-card {
+      background: var(--card-bg); border-radius: 14px; padding: 20px 16px; text-align: center;
+      border: 1px solid var(--border); transition: transform 0.3s ease;
+    }
+    .result-card.pop { transform: scale(1.02); }
+    .result-card .r-label { font-size: 10px; font-weight: 700; color: var(--mid-text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .result-card .r-value { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .result-card .r-sub { font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 500; }
+
+    .methodology {
+      margin-top: 20px; padding: 16px 18px; background: var(--card-bg);
+      border-radius: 12px; border: 1px solid var(--border);
+    }
+    .methodology .m-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .methodology .m-body { font-size: 12px; color: var(--light-text); line-height: 1.7; }
+    .methodology strong { color: var(--mid-text); font-weight: 600; }
+
+    .cta-wrap { text-align: center; margin-top: 40px; }
+    .cta-wrap .cta-lead { font-size: 16px; color: var(--light-text); margin-bottom: 18px; font-weight: 500; }
+    .cta-btn {
+      display: inline-block; background: var(--blue);
+      border-radius: 12px; padding: 16px 40px; font-size: 15px; font-weight: 700; color: #fff;
+      cursor: pointer; box-shadow: 0 2px 12px rgba(30,95,187,0.3);
+      text-decoration: none; border: none; transition: transform 0.2s, box-shadow 0.2s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(30,95,187,0.4); background: var(--blue-dark); }
+    .cta-site { font-size: 13px; color: var(--muted); margin-top: 14px; font-weight: 500; }
+
+    @media (max-width: 780px) {
+      .card { grid-template-columns: 1fr; gap: 32px; padding: 28px 20px; }
+      .header h1 { font-size: 28px; }
+      .result-hero .r-value { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:center;gap:8px;padding:12px 16px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid #E5E7EB;">
+    <a href="index.html" style="padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;background:#0F172A;color:#fff;">RFID Kiosk ROI</a>
+    <a href="mpos.html" style="padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;background:#F3F4F6;color:#4B5563;">mPOS ROI</a>
+  </nav>
+  <div style="height:52px"></div>
+  <div class="header">
+    <div class="badge"><span class="badge-brand">MishiPay</span><span class="badge-label">ROI Calculator</span></div>
+    <h1>How much can RFID Kiosks<br><span>save your stores?</span></h1>
+    <p>Adjust the sliders below to match your current checkout setup. See your projected annual savings by replacing traditional tills with MishiPay RFID Kiosks.</p>
+  </div>
+
+  <div class="card">
+    <div>
+      <div class="section-label">Your Projected ROI</div>
+      <div class="result-hero" id="hero-card">
+        <div class="r-label">Annual Net Savings</div>
+        <div class="r-value" id="r-net">$0</div>
+        <div class="r-sub">Checkout staff costs saved minus kiosk investment</div>
+      </div>
+      <div class="result-grid">
+        <div class="result-card"><div class="r-label">Current Staff Cost</div><div class="r-value" id="r-staff">$0</div><div class="r-sub">per year</div></div>
+        <div class="result-card"><div class="r-label">Kiosk Investment</div><div class="r-value" id="r-kiosk">$0</div><div class="r-sub" id="r-kiosk-sub">0 kiosks × $3,300/yr</div></div>
+        <div class="result-card"><div class="r-label">ROI</div><div class="r-value" id="r-roi">0%</div><div class="r-sub">return on kiosk spend</div></div>
+        <div class="result-card"><div class="r-label">Kiosks per Store</div><div class="r-value" id="r-kps">0</div><div class="r-sub">2 kiosks per cash register</div></div>
+      </div>
+      <div class="methodology">
+        <div class="m-title">How we calculate</div>
+        <div class="m-body">
+          <strong>Staff cost</strong> = cash registers × store hours × hourly rate × stores × 360 days<br>
+          <strong>Kiosk cost</strong> = cash registers × 2 kiosks each × stores × $3,300/yr (hardware + software)<br>
+          <strong>Net savings</strong> = staff cost − kiosk cost
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Your Current Setup</div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Cash Registers per Store</span><span class="slider-value" id="val-cashiers">4</span></div><input type="range" id="cashiers" min="1" max="20" step="1" value="4"><div class="slider-range"><span>1</span><span>20</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Hours of Store Operation</span><span class="slider-value" id="val-hours">8h</span></div><input type="range" id="hours" min="4" max="12" step="1" value="8"><div class="slider-range"><span>4h</span><span>12h</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Staff Cost per Hour</span><span class="slider-value" id="val-cost">$15</span></div><input type="range" id="cost" min="10" max="35" step="1" value="15"><div class="slider-range"><span>$10</span><span>$35</span></div></div>
+      <div class="slider-group"><div class="slider-header"><span class="slider-label">Number of Stores</span><span class="slider-value" id="val-stores">50</span></div><input type="range" id="stores" min="1" max="3000" step="1" value="50"><div class="slider-range"><span>1</span><span>3,000</span></div></div>
+    </div>
+  </div>
+
+  <div class="cta-wrap">
+    <div class="cta-lead">Want to see these savings in your stores?</div>
+    <a href="https://mishipay.com/get-a-demo/" class="cta-btn" target="_blank" rel="noopener">Schedule a Demo →</a>
+    <div class="cta-site">mishipay.com</div>
+  </div>
+
+  <script>
+    const KIOSK_ANNUAL_COST = 3300, WORKING_DAYS = 360;
+    const sliders = { cashiers: document.getElementById('cashiers'), hours: document.getElementById('hours'), cost: document.getElementById('cost'), stores: document.getElementById('stores') };
+    const vals = { cashiers: document.getElementById('val-cashiers'), hours: document.getElementById('val-hours'), cost: document.getElementById('val-cost'), stores: document.getElementById('val-stores') };
+
+    function fmt(n) { return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+    function updateSliderTrack(el) {
+      const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+      el.style.background = `linear-gradient(to right, #1E5FBB 0%, #1E5FBB ${pct}%, #E5E7EB ${pct}%, #E5E7EB 100%)`;
+    }
+    function animatePop() {
+      document.querySelectorAll('.result-hero, .result-card').forEach(c => c.classList.add('pop'));
+      setTimeout(() => document.querySelectorAll('.result-hero, .result-card').forEach(c => c.classList.remove('pop')), 350);
+    }
+    function calculate() {
+      const c = +sliders.cashiers.value, h = +sliders.hours.value, r = +sliders.cost.value, s = +sliders.stores.value;
+      vals.cashiers.textContent = c; vals.hours.textContent = h + 'h'; vals.cost.textContent = '$' + r; vals.stores.textContent = s.toLocaleString();
+      Object.values(sliders).forEach(updateSliderTrack);
+      const annualStaff = c * h * r * s * WORKING_DAYS;
+      const kiosksPerStore = c * 2, totalKiosks = kiosksPerStore * s, annualKiosk = totalKiosks * KIOSK_ANNUAL_COST;
+      const net = annualStaff - annualKiosk, roi = annualKiosk > 0 ? Math.round((net / annualKiosk) * 100) : 0;
+      document.getElementById('r-net').textContent = (net >= 0 ? '' : '-') + fmt(net);
+      document.getElementById('r-staff').textContent = fmt(annualStaff);
+      document.getElementById('r-kiosk').textContent = fmt(annualKiosk);
+      document.getElementById('r-kiosk-sub').textContent = totalKiosks.toLocaleString() + ' kiosks × $' + KIOSK_ANNUAL_COST.toLocaleString() + '/yr';
+      document.getElementById('r-roi').textContent = roi + '%';
+      document.getElementById('r-kps').textContent = kiosksPerStore;
+      animatePop();
+    }
+    Object.values(sliders).forEach(el => el.addEventListener('input', calculate));
+    calculate();
+  </script>
+</body>
+</html>
